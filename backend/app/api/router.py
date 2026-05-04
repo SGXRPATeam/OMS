@@ -1,8 +1,45 @@
 from fastapi import APIRouter
-from app.api.routes.auth import router as auth_router
-from app.api.routes.users import router as users_router
+
+from app.api.routes import auth
+from app.api.routes import users
+from app.api.routes import orders
+from app.api.routes import non_orders
+from app.api.routes import dashboard
 
 api_router = APIRouter()
 
-api_router.include_router(auth_router)
-api_router.include_router(users_router)
+
+# Authentication
+api_router.include_router(
+    auth.router,
+    prefix="/auth",
+    tags=["Authentication"],
+)
+
+# Users
+api_router.include_router(
+    users.router,
+    prefix="/users",
+    tags=["Users"],
+)
+
+# Orders
+api_router.include_router(
+    orders.router,
+    prefix="/orders",
+    tags=["Orders"],
+)
+
+# Non Orders
+api_router.include_router(
+    non_orders.router,
+    prefix="/non-orders",
+    tags=["Non Orders"],
+)
+
+# Dashboard
+api_router.include_router(
+    dashboard.router,
+    prefix="/dashboard",
+    tags=["Dashboard"],
+)

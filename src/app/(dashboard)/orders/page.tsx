@@ -1,24 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import OrdersTable from "@/modules/dashboard/components/OrdersTable";
 import OrderFilters from "@/modules/orders/components/OrderFilters";
 import CreateOrderDrawer from "@/modules/dashboard/components/CreateOrderDrawer";
-import { orders } from "@/mock/orders";
-
+import { OrderService } from "@/services/order.service";
 
 export default function OrdersPage() {
+  const [orders, setOrders] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [openDrawer, setOpenDrawer] = useState(false);
 
-  // Filtering logic
+  // Fetch from backend
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const data = await OrderService.getAll();
+
+      const formatted = data.map((item: any) => ({
+  id: item.caseid,
+  customer: item.account_number,
+  type: item.order_type,
+  status: item.status,
+  deliveryDate: item.delivery_date,
+  amount: item.quantity,
+  progress: 100,
+}));
+
+      setOrders(formatted);
+    } catch (error) {
+      console.error("Failed to fetch orders", error);
+    }
+  };
+
+  // Filter
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
-      order.id.toLowerCase().includes(search.toLowerCase()) ||
-      order.customer.toLowerCase().includes(search.toLowerCase());
+      order.id
+        ?.toLowerCase()
+        .includes(search.toLowerCase()) ||
+      order.customer
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
 
-    const matchesStatus = status ? order.status === status : true;
+    const matchesStatus = status
+      ? order.status === status
+      : true;
 
     return matchesSearch && matchesStatus;
   });
@@ -27,7 +58,9 @@ export default function OrdersPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Orders</h1>
+        <h1 className="text-2xl font-semibold">
+          Orders
+        </h1>
 
         <button
           onClick={() => setOpenDrawer(true)}
@@ -51,7 +84,10 @@ export default function OrdersPage() {
       {/* Drawer */}
       <CreateOrderDrawer
         open={openDrawer}
-        onClose={() => setOpenDrawer(false)}
+        onClose={() => {
+          setOpenDrawer(false);
+          fetchOrders(); // refresh table
+        }}
       />
     </div>
   );
