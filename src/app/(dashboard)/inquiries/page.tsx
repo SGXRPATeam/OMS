@@ -4,6 +4,7 @@ import { useState } from "react";
 import InquiryCards from "@/modules/inquiries/components/InquiryCards";
 import InquiryForm from "@/modules/inquiries/components/InquiryForm";
 import InquiryList from "@/modules/inquiries/components/InquiryList";
+import { Search } from "lucide-react";
 
 import type {
   Inquiry,
@@ -20,22 +21,23 @@ export default function InquiriesPage() {
     useState<InquiryType | null>(null);
 
   const [search, setSearch] = useState("");
+  const [listFilter, setListFilter] = useState("all");
 
   const [inquiryList, setInquiryList] =
     useState<Inquiry[]>(initialInquiries);
 
-  const filteredInquiries = inquiryList.filter((item) =>
-  [
-    item.id,
-    item.type,
-    item.category,
-    item.description,
-    item.status,
-  ]
-    .join(" ")
+  const filteredInquiries = inquiryList.filter((item) => {
+  const matchesType =
+    listFilter === "all"
+      ? true
+      : item.type.toLowerCase() === listFilter;
+
+  const matchesSearch = item.id
     .toLowerCase()
-    .includes(search.toLowerCase())
-);  
+    .includes(search.toLowerCase());
+
+  return matchesType && matchesSearch;
+});
 
   const handleAddInquiry = (
     category: string,
@@ -117,9 +119,39 @@ export default function InquiriesPage() {
     </div>
   </div>
 )}
+    {/* Search + Filter */}
+<div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+  {/* Search */}
+  <div className="relative w-full md:w-80">
+  <Search
+    size={18}
+    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+  />
 
-      {/* List */}
-      <InquiryList data={filteredInquiries} />
+  <input
+    type="text"
+    placeholder="Search by ID..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="w-full border rounded-xl pl-11 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+  />
+</div>
+
+  {/* Filter */}
+  <select
+    value={listFilter}
+    onChange={(e) => setListFilter(e.target.value)}
+    className="w-full md:w-56 border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+  >
+    <option value="all">All</option>
+    <option value="inquiry">Inquiry</option>
+    <option value="complaint">Complaint</option>
+    <option value="dispute">Dispute</option>
+  </select>
+</div>
+
+{/* List */}
+<InquiryList data={filteredInquiries} />
     </div>
   );
 }

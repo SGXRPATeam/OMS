@@ -43,11 +43,28 @@ export const NAV_ITEMS = [
     ],
   },
 
-  {
-    name: "Inquiries",
-    path: "/inquiries",
-    icon: MessageSquare,
-  },
+ {
+  name: "Inquiries",
+  icon: MessageSquare,
+  children: [
+    {
+      name: "Inquiry",
+      path: "/inquiries",
+      icon: MessageSquare,
+    },
+    {
+      name: "Complaint List",
+      path: "/inquiries/complaints",
+      icon: MessageSquare,
+    },
+    
+    {
+      name: "Dispute List",
+      path: "/inquiries/disputes",
+      icon: MessageSquare,
+    },
+  ],
+},
   {
     name: "Contact Us",
     path: "/contact",

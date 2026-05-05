@@ -5,10 +5,7 @@ from app.db.session import SessionLocal
 from app.schemas.auth import LoginRequest, LoginResponse
 from app.core.security import create_access_token, verify_password
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["Authentication"],
-)
+router = APIRouter()
 
 
 @router.post(
@@ -22,17 +19,14 @@ def login(payload: LoginRequest):
         email = payload.email.strip().lower()
         password = payload.password.strip()
 
-        # Validate email format
         if "@" not in email:
             raise HTTPException(
                 status_code=400,
                 detail="Invalid email format",
             )
 
-        # Extract domain
         domain = email.split("@")[1]
 
-        # Find tenant
         tenant_query = text("""
             SELECT tenantid
             FROM tenant_domain
@@ -54,7 +48,6 @@ def login(payload: LoginRequest):
 
         tenantid = tenant_row.tenantid
 
-        # Find user
         user_query = text("""
             SELECT userid,
                    email,
@@ -82,7 +75,6 @@ def login(payload: LoginRequest):
                 detail="User not found",
             )
 
-        # Verify password
         if not verify_password(
             password,
             user.password_hash,
@@ -92,7 +84,6 @@ def login(payload: LoginRequest):
                 detail="Invalid password",
             )
 
-        # Get role name
         role_query = text("""
             SELECT role_name
             FROM role_master
@@ -110,15 +101,12 @@ def login(payload: LoginRequest):
                 detail="Role not found",
             )
 
-        role_name = role.role_name
-
-        # Create JWT
         token = create_access_token(
             {
                 "userid": user.userid,
                 "email": user.email,
                 "tenantid": user.tenantid,
-                "role": role_name,
+                "role": role.role_name,
             }
         )
 
@@ -127,7 +115,7 @@ def login(payload: LoginRequest):
             token_type="bearer",
             userid=user.userid,
             tenantid=user.tenantid,
-            role=role_name,
+            role=role.role_name,
             email=user.email,
         )
 
