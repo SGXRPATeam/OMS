@@ -13,13 +13,11 @@ export default function InquiryList({ data }: Props) {
           Inquiry List
         </h2>
 
-        <p className="text-sm text-gray-500 mt-1">
-          Track all complaints, inquiries, and disputes
-        </p>
+        
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-hidden">
         <table className="w-full table-fixed text-sm">
           <thead className="bg-gray-50 border-b">
             <tr className="text-left text-textSecondary">

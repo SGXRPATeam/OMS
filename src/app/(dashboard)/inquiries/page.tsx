@@ -5,6 +5,8 @@ import InquiryCards from "@/modules/inquiries/components/InquiryCards";
 import InquiryForm from "@/modules/inquiries/components/InquiryForm";
 import InquiryList from "@/modules/inquiries/components/InquiryList";
 import { Search } from "lucide-react";
+import ComplaintsPage from "./complaints/page";
+import DisputesPage from "./disputes/page";
 
 import type {
   Inquiry,
@@ -84,38 +86,47 @@ export default function InquiriesPage() {
         setActiveType={setActiveType}
       />
 
-      {/* Form */}
-      {activeType && (
-  <div className="bg-white rounded-2xl border shadow-sm p-6">
-    {/* Header */}
-    <div className="flex justify-between items-center border-b pb-4">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900">
-          {activeType === "complaint" && "Raise Complaint"}
-          {activeType === "inquiry" && "Submit Inquiry"}
-          {activeType === "dispute" && "Raise Dispute"}
-        </h2>
+   {/* Form Modal */}
+{activeType && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+    {/* Background overlay */}
+    <div
+      className="absolute inset-0 bg-black/10 backdrop-blur-6"
+      onClick={() => setActiveType(null)}
+    />
 
-        <p className="text-sm text-gray-500 mt-1">
-          Fill the details below
-        </p>
+    {/* Popup */}
+    <div className="relative z-10 w-full max-w-2xl mx-4 bg-white rounded-3xl shadow-2xl border p-6 animate-in fade-in zoom-in-95 duration-300">
+      {/* Header */}
+      <div className="flex justify-between items-center border-b pb-4">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-900">
+            {activeType === "complaint" && "Raise Complaint"}
+            {activeType === "inquiry" && "Submit Inquiry"}
+            {activeType === "dispute" && "Raise Dispute"}
+          </h2>
+
+          <p className="text-sm text-gray-500 mt-1">
+            Fill the details below
+          </p>
+        </div>
+
+        {/* Close */}
+        <button
+          onClick={() => setActiveType(null)}
+          className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-lg"
+        >
+          ✕
+        </button>
       </div>
 
-      {/* Back Button */}
-      <button
-        onClick={() => setActiveType(null)}
-        className="text-primary text-sm font-medium hover:underline"
-      >
-        ← Back to options
-      </button>
-    </div>
-
-    {/* Form */}
-    <div className="mt-6">
-      <InquiryForm
-        type={activeType}
-        onSubmit={handleAddInquiry}
-      />
+      {/* Form */}
+      <div className="mt-6">
+        <InquiryForm
+          type={activeType}
+          onSubmit={handleAddInquiry}
+        />
+      </div>
     </div>
   </div>
 )}
@@ -150,8 +161,34 @@ export default function InquiriesPage() {
   </select>
 </div>
 
-{/* List */}
-<InquiryList data={filteredInquiries} />
+
+
+{/* Inquiry List */}
+<div className="bg-blue-50 border border-blue-200 rounded-3xl p-6 shadow-sm  text-blue-900 mb-4">
+
+
+  <InquiryList data={filteredInquiries} />
+</div>
+
+
+<hr className="border-gray-200 my-8" />
+
+{/* Complaint List */}
+<div className="bg-orange-50 border border-orange-200 rounded-3xl p-6 shadow-sm  text-orange-900 mb-4">
+  
+
+  <ComplaintsPage />
+</div>
+
+<hr className="border-gray-200 my-8" />
+
+{/* Dispute List */}
+<div className="bg-purple-50 border border-purple-200 rounded-3xl p-6 shadow-sm  text-purple-900 mb-4">
+  
+
+  <DisputesPage />
+</div>
+
     </div>
   );
 }

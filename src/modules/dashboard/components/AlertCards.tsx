@@ -6,9 +6,13 @@ export default function AlertCards() {
 
       <div className="flex justify-between items-center">
   <div className="flex items-center gap-3">
-    <h2 className="text-lg font-semibold text-textPrimary">
-      Quick review
-    </h2>
+    <div className="flex items-center gap-2 mb-5">
+  <AlertTriangle size={22} className="text-indigo-600" />
+
+  <h2 className="text-3xl font-semibold text-textPrimary tracking-tight">
+    Alerts
+  </h2>
+
 
     {/* AI Powered Badge */}
     <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-medium shadow-sm">
@@ -16,10 +20,11 @@ export default function AlertCards() {
   <span>AI Powered</span>
 </div>
   </div>
+  </div>
 
-  <button className="text-primary text-sm font-medium hover:underline">
+  {/* <button className="text-primary text-sm font-medium hover:underline">
     View all alerts →
-  </button>
+  </button> */}
 </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

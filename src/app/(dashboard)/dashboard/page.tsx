@@ -195,54 +195,56 @@ export default function DashboardPage() {
       {/* Alerts */}
       <AlertCards />
 
-      {/* Bottom Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div className="bg-white rounded-3xl border shadow-sm overflow-hidden">
-          <OrdersTable data={orders.slice(0, 3)} />
-        </div>
+      {/* Bottom Section */}
+<div className="space-y-6">
+  {/* Recent Orders */}
+  <div className="bg-white rounded-3xl border shadow-lg overflow-hidden">
+    <OrdersTable data={orders.slice(0, 3)} />
+  </div>
 
-        <div className="bg-white rounded-3xl border shadow-sm p-6">
-          <div className="flex justify-between items-start mb-5">
+  {/* Recent Inquiries */}
+  <div className="bg-white rounded-3xl border shadow-xl p-6">
+    <div className="mb-5">
+      <h2 className="text-xl font-semibold text-gray-900">
+        Recent Inquiries
+      </h2>
+
+      <p className="text-sm text-gray-500 mt-1">
+        Track and manage latest inquiries
+      </p>
+    </div>
+
+    <div className="space-y-4">
+  {enquiries.map((item, index) => (
+    <div
+      key={item.id}
+      className={`rounded-2xl border p-4 hover:shadow-md transition ${
+        index === 0
+          ? "bg-blue-50 border-blue-200"
+          : index === 1
+          ? "bg-purple-50 border-purple-200"
+          : "bg-orange-50 border-orange-200"
+      }`}
+    >
+          <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
-                Recent Inquiries
-              </h2>
-
+              <h3 className="font-semibold text-primary">
+                {item.id}
+              </h3>
               <p className="text-sm text-gray-500 mt-1">
-                Track and manage latest inquiries
+                {item.category}
               </p>
             </div>
 
-            <button className="text-primary text-sm font-medium hover:underline">
-              View all
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {enquiries.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-2xl border p-4 hover:shadow-md transition"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-semibold text-primary">
-                      {item.id}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {item.category}
-                    </p>
-                  </div>
-
-                  <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-medium">
-                    {item.status}
-                  </span>
-                </div>
-              </div>
-            ))}
+            <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-medium">
+              {item.status}
+            </span>
           </div>
         </div>
-      </div>
+      ))}
+    </div>
+  </div>
+</div>
 
       <CreateOrderDrawer
         open={openDrawer}
