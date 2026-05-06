@@ -7,8 +7,7 @@ export default function OrderForm() {
   const [form, setForm] = useState({
     account_number: "",
     product: "",
-    quantity: "",
-    description: "",
+    Price: "",
     delivery_address: "",
     order_type: "STANDARD",
   });
@@ -21,8 +20,7 @@ export default function OrderForm() {
     if (
       !form.account_number ||
       !form.product ||
-      !form.quantity ||
-      !form.description ||
+      !form.Price ||
       !form.delivery_address
     ) {
       alert("Please fill all fields");
@@ -31,7 +29,8 @@ export default function OrderForm() {
 
     await OrderService.create({
       ...form,
-      quantity: Number(form.quantity),
+      
+      price: Number(form.Price),
     });
 
     alert("Order created successfully");
@@ -39,8 +38,7 @@ export default function OrderForm() {
     setForm({
       account_number: "",
       product: "",
-      quantity: "",
-      description: "",
+      Price: "",
       delivery_address: "",
       order_type: "STANDARD",
     });
@@ -77,33 +75,22 @@ export default function OrderForm() {
         }
       />
 
-      {/* Quantity */}
+      {/* price */}
       <input
-        value={form.quantity}
-        placeholder="Quantity"
+        value={form.Price}
+        placeholder="Price"
         type="number"
         className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
         onChange={(e) =>
           setForm({
             ...form,
-            quantity: e.target.value,
+            Price: e.target.value,
           })
         }
       />
 
-      {/* Description */}
-      <textarea
-        value={form.description}
-        placeholder="Description"
-        rows={4}
-        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary resize-none"
-        onChange={(e) =>
-          setForm({
-            ...form,
-            description: e.target.value,
-          })
-        }
-      />
+     
+      
 
       {/* Delivery Address */}
       <textarea
