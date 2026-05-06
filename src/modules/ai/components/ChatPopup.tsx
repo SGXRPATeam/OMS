@@ -40,7 +40,7 @@ export default function ChatPopup({ open }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed bottom-24 right-6 w-[360px] bg-white rounded-2xl shadow-2xl border z-50 overflow-hidden">
+    <div className="fixed bottom-24 right-6 w-[450px] h-[460px] bg-white rounded-2xl shadow-2xl border z-50 overflow-hidden">
       
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3">
