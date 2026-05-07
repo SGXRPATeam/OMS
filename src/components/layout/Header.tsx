@@ -75,7 +75,7 @@ export default function Header() {
                 John Doe
               </p>
               <p className="text-sm text-gray-500">
-                Admin
+                TEN-1-2345
               </p>
             </div>
 
@@ -104,7 +104,10 @@ export default function Header() {
                 My Profile
               </button>
 
-              <button
+
+
+             {/* { if the user is admin then they can register the user otherwise they can't see the button } */}
+              {/* <button
                 onClick={() => {
                   setOpen(false);
                   router.push(
@@ -114,7 +117,7 @@ export default function Header() {
                 className="w-full text-left px-5 py-4 hover:bg-gray-50"
               >
                 Register User
-              </button>
+              </button> */}
 
               <button
                 onClick={handleLogout}

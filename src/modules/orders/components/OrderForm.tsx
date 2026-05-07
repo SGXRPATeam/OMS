@@ -281,7 +281,6 @@
 //   );
 // }
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -289,7 +288,26 @@ import { useSearchParams } from 'next/navigation';
 import { OrderService } from '@/services/order.service';
 import ProductCardList from '@/modules/products/components/ProductCardList';
 
+const initialAccounts = [
+  {
+    account_number: '1001',
+    address: 'Apollo Hospital, Hyderabad',
+  },
+  {
+    account_number: '1002',
+    address: 'Apollo Hospital, Chennai',
+  },
+  {
+    account_number: '1003',
+    address: 'Apollo Hospital, Bangalore',
+  },
+];
+
 export default function OrderForm() {
+  const [accounts, setAccounts] = useState(initialAccounts);
+  const [showNewAddress, setShowNewAddress] = useState(false);
+  const [newAddress, setNewAddress] = useState('');
+
   const searchParams = useSearchParams();
   const [openProducts, setOpenProducts] = useState(false);
   const [unitPrice, setUnitPrice] = useState(0);
@@ -375,28 +393,108 @@ export default function OrderForm() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Account Number */}
         <div>
-          <label className="block mb-2 text-sm font-medium">
-            Account Number
-          </label>
+  <label className="block mb-2 text-sm font-medium">
+    Account Number
+  </label>
 
-          <input
-            value={form.account_number}
-            placeholder="Account Number"
-            className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
-            onChange={(e) =>
-              setForm({
-                ...form,
-                account_number: e.target.value,
-              })
-            }
-          />
-        </div>
+  <select
+    value={form.account_number}
+    className="w-full border border-gray-300 rounded-xl px-4 py-3"
+    onChange={(e) => {
+      const value = e.target.value;
+
+      if (value === 'NEW_ADDRESS') {
+        setShowNewAddress(true);
+        return;
+      }
+
+      const selected = accounts.find(
+        (a) => a.account_number === value
+      );
+
+      setForm({
+        ...form,
+        account_number: value,
+        delivery_address: selected?.address || '',
+      });
+    }}
+  >
+    <option value="">Select Account</option>
+
+    {accounts.map((acc) => (
+      <option
+        key={acc.account_number}
+        value={acc.account_number}
+      >
+        {acc.account_number}
+      </option>
+    ))}
+
+    <option value="NEW_ADDRESS">
+      + Deliver to New Address
+    </option>
+  </select>
+</div>
+
+
+
+{showNewAddress && (
+  <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-[1000]">
+    <div className="bg-white rounded-2xl p-6 w-[500px]">
+      <h2 className="text-lg font-semibold mb-4">
+        Add New Delivery Address
+      </h2>
+
+      <textarea
+        value={newAddress}
+        rows={4}
+        className="w-full border rounded-xl p-3"
+        placeholder="Enter new address"
+        onChange={(e) => setNewAddress(e.target.value)}
+      />
+
+      <div className="flex gap-3 mt-5">
+        <button
+          onClick={() => setShowNewAddress(false)}
+          className="flex-1 bg-gray-200 py-3 rounded-xl"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={() => {
+            const newAccNo = String(
+              1000 + accounts.length + 1
+            );
+
+            const newAccount = {
+              account_number: newAccNo,
+              address: newAddress,
+            };
+
+            setAccounts([...accounts, newAccount]);
+
+            setForm({
+              ...form,
+              account_number: newAccNo,
+              delivery_address: newAddress,
+            });
+
+            setNewAddress('');
+            setShowNewAddress(false);
+          }}
+          className="flex-1 bg-primary text-white py-3 rounded-xl"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
         {/* Product */}
         <div>
-          <label className="block mb-2 text-sm font-medium">
-            Product
-          </label>
+          <label className="block mb-2 text-sm font-medium">Product</label>
 
           <div
             onClick={() => setOpenProducts(true)}
@@ -408,9 +506,7 @@ export default function OrderForm() {
 
         {/* Quantity */}
         <div>
-          <label className="block mb-2 text-sm font-medium">
-            Quantity
-          </label>
+          <label className="block mb-2 text-sm font-medium">Quantity</label>
 
           <input
             value={form.quantity}
@@ -428,9 +524,7 @@ export default function OrderForm() {
 
         {/* Total Price */}
         <div>
-          <label className="block mb-2 text-sm font-medium">
-            Total Price
-          </label>
+          <label className="block mb-2 text-sm font-medium">Total Price</label>
 
           <input
             value={form.Price}
@@ -441,9 +535,7 @@ export default function OrderForm() {
 
         {/* Delivery Address */}
         <div>
-          <label className="block mb-2 text-sm font-medium">
-            Delivery Address
-          </label>
+          <label className="block mb-2 text-sm font-medium">Delivery Address</label>
 
           <textarea
             value={form.delivery_address}
@@ -460,7 +552,7 @@ export default function OrderForm() {
         </div>
 
         {/* Order Type */}
-        <div>
+        {/* <div>
           <label className="block mb-2 text-sm font-medium">
             Order Type
           </label>
@@ -478,7 +570,7 @@ export default function OrderForm() {
             <option value="STANDARD">Standard</option>
             <option value="NON_STANDARD">Non Standard</option>
           </select>
-        </div>
+        </div> */}
 
         {/* Buttons */}
         <div className="grid grid-cols-2 gap-3">
@@ -505,9 +597,7 @@ export default function OrderForm() {
           <div className="bg-white w-[95vw] max-w-[1400px] h-[85vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
             {/* Header */}
             <div className="flex justify-between items-center px-8 py-6 border-b bg-white">
-              <h2 className="text-2xl font-bold text-slate-900">
-                Select Product
-              </h2>
+              <h2 className="text-2xl font-bold text-slate-900">Select Product</h2>
 
               <button
                 onClick={() => setOpenProducts(false)}
