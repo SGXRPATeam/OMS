@@ -21,13 +21,11 @@ export default function OrdersTable({ data }: { data: Order[] }) {
           </p>
         </div>
 
-        <button className="text-primary text-sm font-medium hover:underline">
-          View all orders →
-        </button>
+        
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-hidden">
         <table className="w-full table-fixed text-sm">
           <thead className="bg-gray-50 border-b">
             <tr className="text-left text-textSecondary">

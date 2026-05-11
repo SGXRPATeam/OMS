@@ -8,6 +8,7 @@ import {
   Phone,
   Settings,
 } from "lucide-react";
+import path from "path";
 
 export const NAV_ITEMS = [
   {
@@ -22,7 +23,7 @@ export const NAV_ITEMS = [
   },
   {
     name: "Favourites",
-    path: "/favourites",
+    path: "/favourite",
     icon: Heart,
   },
 
@@ -43,11 +44,30 @@ export const NAV_ITEMS = [
     ],
   },
 
-  {
-    name: "Inquiries",
-    path: "/inquiries",
-    icon: MessageSquare,
-  },
+ {
+  name: "Inquiries",
+  path: "/inquiries",
+  icon: MessageSquare,
+
+  // children: [
+  //   {
+  //     name: "Inquiry",
+  //     path: "/inquiries",
+  //     icon: MessageSquare,
+  //   },
+  //   {
+  //     name: "Complaint List",
+  //     path: "/inquiries/complaints",
+  //     icon: MessageSquare,
+  //   },
+    
+  //   {
+  //     name: "Dispute List",
+  //     path: "/inquiries/disputes",
+  //     icon: MessageSquare,
+  //   },
+  // ],
+},
   {
     name: "Contact Us",
     path: "/contact",

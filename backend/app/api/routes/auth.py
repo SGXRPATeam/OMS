@@ -1,14 +1,25 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from sqlalchemy import text
+from fastapi.security import HTTPBearer
+from fastapi.security.http import HTTPAuthorizationCredentials
+from fastapi import Depends
 
 from app.db.session import SessionLocal
-from app.schemas.auth import LoginRequest, LoginResponse
-from app.core.security import create_access_token, verify_password
-
-router = APIRouter(
-    prefix="/auth",
-    tags=["Authentication"],
+from app.schemas.auth import (
+    LoginRequest,
+    LoginResponse,
+    TenantInfo,
+    SwitchTenantRequest,
+    SwitchTenantResponse,
 )
+from app.core.security import (
+    create_access_token,
+    verify_password,
+    decode_access_token,
+)
+
+router = APIRouter()
+security = HTTPBearer()
 
 
 @router.post(
@@ -22,20 +33,21 @@ def login(payload: LoginRequest):
         email = payload.email.strip().lower()
         password = payload.password.strip()
 
-        # Validate email format
         if "@" not in email:
             raise HTTPException(
                 status_code=400,
                 detail="Invalid email format",
             )
 
-        # Extract domain
         domain = email.split("@")[1]
+        is_platform_user = (
+            domain == "solugenix.com"
+        )
 
-        # Find tenant
+        # resolve tenant from domain
         tenant_query = text("""
-            SELECT tenantid
-            FROM tenant_domain
+            SELECT tenantid, tenant_name
+            FROM tenant
             WHERE domain_name = :domain
               AND status = 'ACTIVE'
               AND is_deleted = FALSE
@@ -46,34 +58,35 @@ def login(payload: LoginRequest):
             {"domain": domain},
         ).fetchone()
 
-        if not tenant_row:
+        if not tenant_row and not is_platform_user:
             raise HTTPException(
                 status_code=401,
                 detail="Unknown tenant domain",
             )
 
-        tenantid = tenant_row.tenantid
+        domain_tenantid = (
+            tenant_row.tenantid
+            if tenant_row
+            else None
+        )
 
-        # Find user
+        # find user
         user_query = text("""
             SELECT userid,
                    email,
                    password_hash,
-                   role_code,
-                   tenantid
+                           display_name,
+           first_name
             FROM app_user
             WHERE email = :email
-              AND tenantid = :tenantid
+              AND user_status = 'ACTIVE'
               AND status = 'ACTIVE'
               AND is_deleted = FALSE
         """)
 
         user = db.execute(
             user_query,
-            {
-                "email": email,
-                "tenantid": tenantid,
-            },
+            {"email": email},
         ).fetchone()
 
         if not user:
@@ -81,8 +94,16 @@ def login(payload: LoginRequest):
                 status_code=401,
                 detail="User not found",
             )
+        
 
-        # Verify password
+        print("typed password =", password)
+        print( "password check =",
+    verify_password(
+        password,
+        user.password_hash,
+    ),
+)
+
         if not verify_password(
             password,
             user.password_hash,
@@ -92,43 +113,159 @@ def login(payload: LoginRequest):
                 detail="Invalid password",
             )
 
-        # Get role name
-        role_query = text("""
-            SELECT role_name
-            FROM role_master
-            WHERE role_code = :role_code
+        # mapped tenants
+        mapped_query = text("""
+            SELECT
+                utm.tenantid,
+                t.tenant_name,
+                utm.role_code,
+                rm.role_name
+            FROM user_tenant_map utm
+            JOIN tenant t
+              ON t.tenantid = utm.tenantid
+            JOIN role_master rm
+              ON rm.role_code = utm.role_code
+            WHERE utm.userid = :userid
+              AND utm.mapping_status = 'ACTIVE'
+              AND utm.status = 'ACTIVE'
+              AND utm.is_deleted = FALSE
+            ORDER BY t.tenant_name
         """)
 
-        role = db.execute(
-            role_query,
-            {"role_code": user.role_code},
-        ).fetchone()
+        mapped_rows = db.execute(
+            mapped_query,
+            {"userid": user.userid},
+        ).fetchall()
 
-        if not role:
+        if not mapped_rows:
             raise HTTPException(
                 status_code=401,
-                detail="Role not found",
+                detail="No tenant access mapped",
             )
 
-        role_name = role.role_name
+        tenants = [
+            TenantInfo(
+                tenantid=row.tenantid,
+                tenant_name=row.tenant_name,
+                role_code=row.role_code,
+                role=row.role_name,
+            )
+            for row in mapped_rows
+        ]
 
-        # Create JWT
+        # active tenant selection
+        active = None
+
+        if is_platform_user:
+            active = mapped_rows[0]
+        else:
+            for row in mapped_rows:
+                if row.tenantid == domain_tenantid:
+                    active = row
+                    break
+
+            if not active:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Domain tenant not mapped",
+                )
+
+        # create token
         token = create_access_token(
             {
                 "userid": user.userid,
                 "email": user.email,
-                "tenantid": user.tenantid,
-                "role": role_name,
+                "tenantid": active.tenantid,
+                "role": active.role_name,
             }
         )
 
         return LoginResponse(
-            access_token=token,
+          access_token=token,
+          token_type="bearer",
+          userid=user.userid,
+          tenantid=active.tenantid,
+          role=active.role_name,
+          email=user.email,
+          display_name=(
+            user.display_name
+            or user.first_name
+            or user.email
+    ),
+    tenants=tenants,
+)
+
+    finally:
+        db.close()
+
+@router.post(
+    "/switch-tenant",
+    response_model=SwitchTenantResponse,
+)
+def switch_tenant(
+    payload: SwitchTenantRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    db = SessionLocal()
+
+    try:
+        token = credentials.credentials
+
+        decoded = decode_access_token(
+            token
+        )
+
+        if not decoded:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid token",
+            )
+
+        userid = decoded["userid"]
+
+        tenant_query = text("""
+            SELECT
+                utm.tenantid,
+                utm.role_code,
+                rm.role_name
+            FROM user_tenant_map utm
+            JOIN role_master rm
+              ON rm.role_code = utm.role_code
+            WHERE utm.userid = :userid
+              AND utm.tenantid = :tenantid
+              AND utm.mapping_status = 'ACTIVE'
+              AND utm.status = 'ACTIVE'
+              AND utm.is_deleted = FALSE
+        """)
+
+        row = db.execute(
+            tenant_query,
+            {
+                "userid": userid,
+                "tenantid": payload.tenantid,
+            },
+        ).fetchone()
+
+        if not row:
+            raise HTTPException(
+                status_code=403,
+                detail="Tenant access denied",
+            )
+
+        new_token = create_access_token(
+            {
+                "userid": userid,
+                "email": decoded["email"],
+                "tenantid": row.tenantid,
+                "role": row.role_name,
+            }
+        )
+
+        return SwitchTenantResponse(
+            access_token=new_token,
             token_type="bearer",
-            userid=user.userid,
-            tenantid=user.tenantid,
-            role=role_name,
-            email=user.email,
+            tenantid=row.tenantid,
+            role=row.role_name,
         )
 
     finally:
