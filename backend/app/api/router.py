@@ -5,6 +5,7 @@ from app.api.routes import users
 from app.api.routes import orders
 from app.api.routes import non_orders
 from app.api.routes import dashboard
+from app.api.routes import chatbot
 
 api_router = APIRouter()
 
@@ -43,3 +44,6 @@ api_router.include_router(
     prefix="/dashboard",
     tags=["Dashboard"],
 )
+
+# Chatbot (AI assistant)
+api_router.include_router(chatbot.router)

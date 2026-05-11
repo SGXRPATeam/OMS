@@ -1,0 +1,53 @@
+# ─── Chatbot module dependencies ─────────────────────────────────
+# Install with: pip install -r requirements-chatbot.txt
+
+# ─── Web Framework ───────────────────────────────────────────────
+fastapi
+uvicorn
+python-multipart
+httpx
+
+# ─── Database ────────────────────────────────────────────────────
+asyncpg
+sqlalchemy[asyncio]
+alembic
+psycopg2-binary
+# pgvector  # Uncomment when re-enabling vector search
+
+# ─── LLM & RAG ───────────────────────────────────────────────────
+langchain
+langchain-community
+langchain-core
+langchain-postgres
+sentence-transformers
+ollama
+tiktoken
+greenlet
+
+# ─── Guardrails & Safety ─────────────────────────────────────────
+presidio-analyzer
+presidio-anonymizer
+spacy
+
+# ─── Observability ───────────────────────────────────────────────
+opentelemetry-sdk
+opentelemetry-api
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-sqlalchemy
+opentelemetry-exporter-otlp
+structlog
+prometheus-client
+
+# ─── Utilities ───────────────────────────────────────────────────
+pydantic
+pydantic-settings
+python-dotenv
+tenacity
+Jinja2
+PyYAML
+python-jose[cryptography]
+passlib[bcrypt]
+
+# ─── Testing ─────────────────────────────────────────────────────
+pytest
+pytest-asyncio
